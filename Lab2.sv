@@ -63,3 +63,84 @@ module PaidMinusCost (
 
 endmodule : PaidMinusCost
 
+module ChangeBox (
+    input logic [3:0] change_in,
+    input logic [1:0] pent_in,
+    input logic [1:0] tri_in,
+    input logic [1:0] circ_in,
+
+    output logic [2:0] coin_out,
+    output logic [3:0] change_out,
+    output logic [1:0] pent_rem,
+    output logic [1:0] tri_rem,
+    output logic [1:0] circ_rem
+);
+
+    logic [7:0] ch8;
+    assign ch8 = {4'b0000, change_in};
+
+    logic lt5, eq5, gt5;
+    logic lt3, eq3, gt3;
+    logic lt1, eq1, gt1;
+
+    //If pentagon is needed
+    MagComp cmp5(.A(ch8),
+                 .B(8'd5),
+                 .AltB(lt5),
+                 .AeqB(eq5),
+                 .AgtB(gt5));
+    //If triangle is needed
+    MagComp cmp5(.A(ch8),
+                 .B(8'd5),
+                 .AltB(lt3),
+                 .AeqB(eq3),
+                 .AgtB(gt3));
+    //If circle is needed
+    MagComp cmp5(.A(ch8),
+                 .B(8'd5),
+                 .AltB(lt1),
+                 .AeqB(eq1),
+                 .AgtB(gt1));
+
+    //change >= value
+    logic ge5, ge3, ge1;
+    assign ge5 = gt5 | eq5;
+    assign ge3 = gt3 | eq3;
+    assign ge1 = gt1 | eq1;
+
+    //Check if coins exist
+    logic hasP, hasT, hasC;
+    assign hasP = (pent_in != 2'd0);
+    assign hasT = (tri_in != 2'd0);
+    assign hasC = (circ_in != 2'd0);
+
+    logic canP, canT, canC;
+    assign canP = ge5 & hasP;
+    assign canT = ge3 & hasT;
+    assign canC = ge1 & hasC;
+
+    logic pickP, pickT, pickC;
+
+    assign pickP = canP;
+    assign pickT = (~pickP) & canT;
+    assign pickC = (~pickP) & (~pickT) & canC;
+
+    assign coin_out[2] = pickP;
+    assign coin_out[1] = pickT;
+    assign coin_out[0] = pickP | pickT | pickC;
+
+    logic [3:0] subval;
+
+    assign subval =
+        pickP ? 4'd5 :
+        pickT ? 4'd3 :
+        pickC ? 4'd1 :
+                4'd0;
+
+    assign change_out = chang_in - subval;
+
+
+
+
+
+
