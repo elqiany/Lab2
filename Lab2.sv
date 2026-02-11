@@ -7,7 +7,7 @@ module PaidCostComparator(
     output logic      CoughUpMore,
     output logic      PaidGeCost
 );
-
+    //Extend to 8 bits for MagComp
     logic [7:0] Paid8, Cost8;
     logic lt, eq, gt;
 
@@ -20,8 +20,11 @@ module PaidCostComparator(
                    .AeqB(eq),
                    .AgtB(gt));
 
+    //If Paid < Cost
     assign CoughUpMore = lt;
+    //Paid >= Cost
     assign PaidGeCost = ~lt;
+    //Exact Amount Paid if equal and neither input is 0
     assign ExactAmount = eq & (Paid != 4'd0) & (Cost != 4'd0);
 
 endmodule : PaidCostComparator
@@ -36,21 +39,25 @@ module PaidMinusCost (
     logic lt, eq, gt;
     logic bout;
 
+    //Extend to 8 bits
     assign Paid8 = {4'b0000, Paid};
     assign Cost8 = {4'b0000, Cost};
 
+    //Compare Paid and Cost
     MagComp u_cmp (.A(Paid8),
                    .B(Cost8),
                    .AltB(lt),
                    .AeqB(eq),
                    .AgtB(gt));
 
+    //Compute Paid - Cost
     Subtracter u_sub (.bout(bout),
                       .bin(1'b0),
                       .diff(diff8),
                       .A(Paid8),
                       .B(Cost8));
 
+    //If Paid < Cost -> output 0
     logic [7:0] change8;
     Mux2to1 mux_change (.I0(8'd0),
                         .I1(diff8),
@@ -117,6 +124,7 @@ module ChangeBox (
     assign canT = ge3 & hasT;
     assign canC = ge1 & hasC;
 
+    //Encodes coin output
     logic pickP, pickT, pickC;
 
     assign pickP = canP;
@@ -127,6 +135,7 @@ module ChangeBox (
     assign coin_out[1] = pickT;
     assign coin_out[0] = pickP | pickT | pickC;
 
+    //Determine coin value
     logic [7:0] m1_out, m2_out, val;
 
     Mux2to1 m1(.I0(8'd0),
@@ -144,20 +153,24 @@ module ChangeBox (
                 .S(pickP),
                 .Y(val));
 
+    //Subtracts chosen coin value from change
     assign change_out = change_in - val[3:0];
 
     logic [7:0] pent_keep, pent_dec, pent;
     logic [7:0] tri_keep, tri_dec, tria;
     logic [7:0] circ_keep, circ_dec, circ;
 
+    //OG counts
     assign pent_keep = {6'd0, Pentagons};
     assign tri_keep = {6'd0, Triangles};
     assign circ_keep = {6'd0, Circles};
 
-    assign pent_dec = [6'd0, (Pentagons - 2'd1)};
+    //Decremented vers
+    assign pent_dec = {6'd0, (Pentagons - 2'd1)};
     assign tri_dec = {6'd0, (Triangles - 2'd1)};
     assign circ_dec = {6'd0, (Circles - 2'd1)};
 
+    //Sel keep or dec
     Mux2to1 mux_p(.I0(pent_keep),
                   .I1(pent_dec),
                   .S(pickP),
@@ -205,6 +218,7 @@ module ZorgianChangeBox(
                         .Cost(Cost),
                         .Change(Change));
 
+    //Connected two change boxes together
     logic [3:0] change_mid;
     logic [1:0] P_mid, T_mid, C_mid;
     logic [3:0] change_after;
@@ -229,17 +243,17 @@ module ZorgianChangeBox(
                    .tri_rem(),
                    .circ_rem());
 
+    //Remaining change
     assign Remaining = PaidGeCost ? change_after : 4'd0;
 
+    //Paid > Cost
     logic PaidGtCost;
     assign PaidGtCost = PaidGeCost & ~ExactAmount & ~CoughUpMore;
 
+    //Need more change...
     assign NotEnoughChange = PaidGtCost & (Remaining != 4'd0);
 
 endmodule : ZorgianChangeBox
-
-
-
 
 
 
