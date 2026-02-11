@@ -4,7 +4,7 @@ module tb_lab2;
 
   int errors = 0;
 
-  // UNIT TEST 1: PaidCostComparator
+  //PaidCostComparator test
 
   logic [3:0] pc_Paid, pc_Cost;
   logic pc_ExactAmount, pc_CoughUpMore, pc_PaidGeCost;
@@ -18,7 +18,7 @@ module tb_lab2;
   );
 
   initial begin
-    $display("\n=== UNIT TEST: PaidCostComparator ===");
+    $display("\nPaidCostComparator");
     $monitor($time,,
       "Paid=%0d Cost=%0d | Exact=%b GE=%b More=%b",
       pc_Paid, pc_Cost, pc_ExactAmount, pc_PaidGeCost, pc_CoughUpMore
@@ -68,7 +68,7 @@ module tb_lab2;
   initial begin
     #1;
 
-    $display("\n=== UNIT TEST: PaidMinusCost ===");
+    $display("\nTEST: PaidMinusCost");
     $monitor($time,,
       "Paid=%0d Cost=%0d | Change=%0d",
       pm_Paid, pm_Cost, pm_Change
@@ -112,7 +112,7 @@ module tb_lab2;
 
   initial begin
     #2;
-    $display("\n=== UNIT TEST: ChangeBox ===");
+    $display("\nChangeBox");
     $monitor($time,,
       "chg_in=%0d P=%0d T=%0d C=%0d | coin=%b chg_out=%0d | Prem=%0d Trem=%0d Crem=%0d",
       cb_change_in, cb_P, cb_T, cb_C,
@@ -172,7 +172,7 @@ module tb_lab2;
 
   initial begin
     #3;
-    $display("\n=== TOP TEST: ZorgianChangeBox ===");
+    $display("\nZorgianChangeBox");
     $monitor($time,,
       "Cost=%0d Paid=%0d P=%0d T=%0d C=%0d | F=%b S=%b Rem=%0d | Exact=%b NE=%b More=%b",
       Cost, Paid, Pentagons, Triangles, Circles,
