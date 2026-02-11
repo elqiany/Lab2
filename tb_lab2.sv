@@ -219,5 +219,3 @@ module tb_lab2;
   end
 
 endmodule : tb_lab2
-
-module
