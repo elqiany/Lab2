@@ -1,0 +1,56 @@
+{
+    "std": [
+        "std",
+        "reYIK",
+        "module",
+        1
+    ],
+    "ChangeBox": [
+        "ChangeBox",
+        "KVT37",
+        "module",
+        2
+    ],
+    "ZorgianChangeBox": [
+        "ZorgianChangeBox",
+        "CT7iS",
+        "module",
+        3
+    ],
+    "Decoder": [
+        "Decoder",
+        "t8TcA",
+        "module",
+        4
+    ],
+    "BarrelShifter": [
+        "BarrelShifter",
+        "p7fYB",
+        "module",
+        5
+    ],
+    "Multiplexer": [
+        "Multiplexer",
+        "UxyT3",
+        "module",
+        6
+    ],
+    "Comparator": [
+        "Comparator",
+        "ZPSNi",
+        "module",
+        7
+    ],
+    "Adder": [
+        "Adder",
+        "xUt1z",
+        "module",
+        8
+    ],
+    "...MASTER...": [
+        "SIM",
+        "amcQw",
+        "module",
+        9
+    ]
+}

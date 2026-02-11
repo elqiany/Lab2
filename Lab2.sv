@@ -1,6 +1,6 @@
 `default_nettype none
 
-module PaidCostComparator(
+module PaidCostComparator (
     input logic [3:0] Paid,
     input logic [3:0] Cost,
     output logic      ExactAmount,

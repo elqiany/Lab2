@@ -1,0 +1,7 @@
+Command exited with non-zero status 255
+{"vcs1":{"timestamp_begin":1770847149.003930141, "rt":0.24, "ut":0.13, "st":0.08}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1770847148.315377362}
+{"VCS_COMP_START_TIME": 1770847148.315377362}
+{"VCS_COMP_END_TIME": 1770847149.410234938}
+{"VCS_USER_OPTIONS": "-sverilog tb_lab2.sv Lab2.sv library.sv"}
+{"vcs1": {"peak_mem": 195922}}

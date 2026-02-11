@@ -5,7 +5,7 @@ module tb_lab2;
   int errors = 0;
 
   // UNIT TEST 1: PaidCostComparator
- 
+
   logic [3:0] pc_Paid, pc_Cost;
   logic pc_ExactAmount, pc_CoughUpMore, pc_PaidGeCost;
 
@@ -93,7 +93,7 @@ module tb_lab2;
 
 
   // UNIT TEST 3: ChangeBox
- 
+
   logic [3:0] cb_change_in, cb_change_out;
   logic [1:0] cb_P, cb_T, cb_C, cb_Prem, cb_Trem, cb_Crem;
   logic [2:0] cb_coin_out;
@@ -149,7 +149,7 @@ module tb_lab2;
   end
 
 
-  // TEST: ZorgianChangeBox 
+  // TEST: ZorgianChangeBox
 
   logic [3:0] Cost, Paid, Remaining;
   logic [1:0] Pentagons, Triangles, Circles;
@@ -212,10 +212,12 @@ module tb_lab2;
     Cost=5; Paid=7; Pentagons=0; Triangles=0; Circles=1; #10;
     if (NotEnoughChange !== 1) begin $display("FAIL TOP change=2 only1C: NotEnoughChange"); errors++; end
 
-    if (errors == 0) $display("\nALL TESTS PASSED ✅");
-    else             $display("\nTESTS FAILED ❌  errors=%0d", errors);
+    if (errors == 0) $display("\nyayyy tests passed");
+    else             $display("\ntests failed", errors);
 
     $finish;
   end
 
 endmodule : tb_lab2
+
+module
