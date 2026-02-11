@@ -5,7 +5,8 @@ module PaidCostComparator(
     input logic [3:0] Cost,
     output logic      ExactAmount,
     output logic      CoughUpMore,
-    output logic      PaidGeCost);
+    output logic      PaidGeCost
+);
 
     logic [7:0] Paid8, Cost8;
     logic lt, eq, gt;
@@ -56,18 +57,15 @@ module PaidMinusCost (
         .B(Cost8)
     );
 
-    always_comb begin
-        if (lt) Change = 4'd0;
-        else    Change = diff8[3:0];
-    end
+    assign Change = lt ? 4'd0 : diff8[3:0];
 
 endmodule : PaidMinusCost
 
 module ChangeBox (
     input logic [3:0] change_in,
-    input logic [1:0] pent_in,
-    input logic [1:0] tri_in,
-    input logic [1:0] circ_in,
+    input logic [1:0] Pentagons,
+    input logic [1:0] Triangles,
+    input logic [1:0] Circles,
 
     output logic [2:0] coin_out,
     output logic [3:0] change_out,
@@ -90,19 +88,19 @@ module ChangeBox (
                  .AeqB(eq5),
                  .AgtB(gt5));
     //If triangle is needed
-    MagComp cmp5(.A(ch8),
-                 .B(8'd5),
+    MagComp cmp3(.A(ch8),
+                 .B(8'd3),
                  .AltB(lt3),
                  .AeqB(eq3),
                  .AgtB(gt3));
     //If circle is needed
-    MagComp cmp5(.A(ch8),
-                 .B(8'd5),
+    MagComp cmp1(.A(ch8),
+                 .B(8'd1),
                  .AltB(lt1),
                  .AeqB(eq1),
                  .AgtB(gt1));
 
-    //change >= value
+    //Checks change >= value
     logic ge5, ge3, ge1;
     assign ge5 = gt5 | eq5;
     assign ge3 = gt3 | eq3;
@@ -110,9 +108,9 @@ module ChangeBox (
 
     //Check if coins exist
     logic hasP, hasT, hasC;
-    assign hasP = (pent_in != 2'd0);
-    assign hasT = (tri_in != 2'd0);
-    assign hasC = (circ_in != 2'd0);
+    assign hasP = (Pentagons != 2'd0);
+    assign hasT = (Triangles != 2'd0);
+    assign hasC = (Circles != 2'd0);
 
     logic canP, canT, canC;
     assign canP = ge5 & hasP;
@@ -137,7 +135,72 @@ module ChangeBox (
         pickC ? 4'd1 :
                 4'd0;
 
-    assign change_out = chang_in - subval;
+    assign change_out = change_in - subval;
+
+    assign pent_rem = Pentagons - (pickP ? 2'd1 : 2'd0);
+    assign tri_rem = Triangles - (pickT ? 2'd1 : 2'd0);
+    assign circ_rem = Circles - (pickC ? 2'd1 : 2'd0);
+
+endmodule : ChangeBox
+
+module ZorgianChange Box(
+    input logic [3:0] Cost,
+    input logic [1:0] Pentagons,
+    input logic [1:0] Triangles,
+    input logic [1:0] Circles,
+    input logic [3:0] Paid,
+
+    output logic [2:0] FirstCoin,
+    output logic [2:0] SecondCoin,
+    output logic [3:0] Remaining,
+    output logic ExactAmount,
+    output logic NotEnoughChange,
+    output logic CoughUpMore
+);
+    logic PaidGeCost;
+    PaidCostComparator u_pc(.Paid(Paid),
+                            .Cost(Cost),
+                            .ExactAmount(ExactAmount),
+                            .CoughupMore(CoughUpMore),
+                            .PaidGeCost(PaidGeCost));
+
+    logic [3:0] Change;
+    PaidMinusCost u_chg(.Paid(Paid),
+                        .Cost(Cost),
+                        .Change(Change));
+
+    logic [3:0] change_mid;
+    logic [1:0] P_mid, T_mid, C_mid;
+    logic [3:0] change_after;
+
+    ChangeBox box1(.change_in(Change),
+                   .Pentagons(Pentagons),
+                   .Triangles(Triangles),
+                   .Circles(Circles),
+                   .coin_out(FirstCoin),
+                   .change_out(change_mid),
+                   .Pentagons_rem(P_mid),
+                   .Triangles_rem(T_mid),
+                   .Circles_rem(C_mid));
+
+    ChangeBox box2(.change_in(change_mid),
+                   .Pentagons(P_mid),
+                   .Triangles(T_mid),
+                   .Circles(C_mid),
+                   .coin_out(SecondCoin),
+                   .change_out(change_after);
+                   .Pentagons_rem();
+                   .Triangles_rem();
+                   .Circles_rem());
+
+    assign Remaining = PaidGeCost ? change_after_two : 4'd0;
+
+    logic PaidGtCost;
+    assign PaidGtCost = PaidGeCost & ~ExactAmount & ~CoughupMore;
+
+    assign NotEnoughChange = PaidGtCost & (Remaining != 4'd0);
+
+endmodule : ZorgianChangeBox
 
 
 
