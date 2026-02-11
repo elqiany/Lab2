@@ -129,17 +129,17 @@ module ChangeBox (
 
     logic [7:0] m1_out, m2_out, val;
 
-    Mux2to1 m1.(.I0(8'd0),
+    Mux2to1 m1(.I0(8'd0),
                 .I1(8'd1),
                 .S(pickC),
                 .Y(m1_out));
 
-    Mux2to1 m2.(.I0(m1_out),
+    Mux2to1 m2(.I0(m1_out),
                 .I1(8'd3),
                 .S(pickT),
                 .Y(m2_out));
 
-    Mux2to1 m3.(.I0(m2_out),
+    Mux2to1 m3(.I0(m2_out),
                 .I1(8'd5),
                 .S(pickP),
                 .Y(val));
@@ -157,7 +157,7 @@ module ChangeBox (
     Mux2to1 mux_p(.I0(pent_keep),
                   .I1(pent_dec),
                   .S(pickP),
-                  .Y(pent8));
+                  .Y(pent));
 
     Mux2to1 mux_t(.I0(tri_keep),
                   .I1(tri_dec),
