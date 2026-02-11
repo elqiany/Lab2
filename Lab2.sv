@@ -154,6 +154,10 @@ module ChangeBox (
     assign tri_keep = {6'd0, Triangles};
     assign circ_keep = {6'd0, Circles};
 
+    assign pent_dec = [6'd0, (Pentagons - 2'd1)};
+    assign tri_dec = {6'd0, (Triangles - 2'd1)};
+    assign circ_dec = {6'd0, (Circles - 2'd1)};
+
     Mux2to1 mux_p(.I0(pent_keep),
                   .I1(pent_dec),
                   .S(pickP),
