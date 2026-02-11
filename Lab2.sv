@@ -14,17 +14,15 @@ module PaidCostComparator(
     assign Paid8 = {4'b0000, Paid};
     assign Cost8 = {4'b0000, Cost};
 
-    MagComp u_cmp (
-        .A(Paid8),
-        .B(Cost8),
-        .AltB(lt),
-        .AeqB(eq),
-        .AgtB(gt)
-    );
+    MagComp u_cmp (.A(Paid8),
+                   .B(Cost8),
+                   .AltB(lt),
+                   .AeqB(eq),
+                   .AgtB(gt));
 
     assign CoughUpMore = lt;
     assign PaidGeCost = ~lt;
-    assign ExactAmount = eq;
+    assign ExactAmount = eq & (Paid != 4'd0) & (Cost != 4'd0);
 
 endmodule : PaidCostComparator
 
@@ -41,23 +39,25 @@ module PaidMinusCost (
     assign Paid8 = {4'b0000, Paid};
     assign Cost8 = {4'b0000, Cost};
 
-    MagComp u_cmp (
-        .A(Paid8),
-        .B(Cost8),
-        .AltB(lt),
-        .AeqB(eq),
-        .AgtB(gt)
-    );
+    MagComp u_cmp (.A(Paid8),
+                   .B(Cost8),
+                   .AltB(lt),
+                   .AeqB(eq),
+                   .AgtB(gt));
 
-    Subtracter u_sub (
-        .bout(bout),
-        .bin(1'b0),
-        .diff(diff8),
-        .A(Paid8),
-        .B(Cost8)
-    );
+    Subtracter u_sub (.bout(bout),
+                      .bin(1'b0),
+                      .diff(diff8),
+                      .A(Paid8),
+                      .B(Cost8));
 
-    assign Change = lt ? 4'd0 : diff8[3:0];
+    logic [7:0] change8;
+    Mux2to1 mux_change (.I0(8'd0),
+                        .I1(diff8),
+                        .S(~lt),
+                        .Y(change8));
+
+    assign Change = change8[3:0];
 
 endmodule : PaidMinusCost
 
@@ -127,23 +127,55 @@ module ChangeBox (
     assign coin_out[1] = pickT;
     assign coin_out[0] = pickP | pickT | pickC;
 
-    logic [3:0] subval;
+    logic [7:0] m1_out, m2_out, val;
 
-    assign subval =
-        pickP ? 4'd5 :
-        pickT ? 4'd3 :
-        pickC ? 4'd1 :
-                4'd0;
+    Mux2to1 m1.(.I0(8'd0),
+                .I1(8'd1),
+                .S(pickC),
+                .Y(m1_out));
 
-    assign change_out = change_in - subval;
+    Mux2to1 m2.(.I0(m1_out),
+                .I1(8'd3),
+                .S(pickT),
+                .Y(m2_out));
 
-    assign pent_rem = Pentagons - (pickP ? 2'd1 : 2'd0);
-    assign tri_rem = Triangles - (pickT ? 2'd1 : 2'd0);
-    assign circ_rem = Circles - (pickC ? 2'd1 : 2'd0);
+    Mux2to1 m3.(.I0(m2_out),
+                .I1(8'd5),
+                .S(pickP),
+                .Y(val));
+
+    assign change_out = change_in - val[3:0];
+
+    logic [7:0] pent_keep, pent_dec, pent;
+    logic [7:0] tri_keep, tri_dec, tria;
+    logic [7:0] circ_keep, circ_dec, circ;
+
+    assign pent_keep = {6'd0, Pentagons};
+    assign tri_keep = {6'd0, Triangles};
+    assign circ_keep = {6'd0, Circles};
+
+    Mux2to1 mux_p(.I0(pent_keep),
+                  .I1(pent_dec),
+                  .S(pickP),
+                  .Y(pent8));
+
+    Mux2to1 mux_t(.I0(tri_keep),
+                  .I1(tri_dec),
+                  .S(pickT),
+                  .Y(tria));
+
+    Mux2to1 mux_c(.I0(circ_keep),
+                  .I1(circ_dec),
+                  .S(pickC),
+                  .Y(circ));
+
+    assign pent_rem = pent[1:0];
+    assign tri_rem = tria[1:0];
+    assign circ_rem = circ[1:0];
 
 endmodule : ChangeBox
 
-module ZorgianChange Box(
+module ZorgianChangeBox(
     input logic [3:0] Cost,
     input logic [1:0] Pentagons,
     input logic [1:0] Triangles,
@@ -161,7 +193,7 @@ module ZorgianChange Box(
     PaidCostComparator u_pc(.Paid(Paid),
                             .Cost(Cost),
                             .ExactAmount(ExactAmount),
-                            .CoughupMore(CoughUpMore),
+                            .CoughUpMore(CoughUpMore),
                             .PaidGeCost(PaidGeCost));
 
     logic [3:0] Change;
@@ -179,24 +211,24 @@ module ZorgianChange Box(
                    .Circles(Circles),
                    .coin_out(FirstCoin),
                    .change_out(change_mid),
-                   .Pentagons_rem(P_mid),
-                   .Triangles_rem(T_mid),
-                   .Circles_rem(C_mid));
+                   .pent_rem(P_mid),
+                   .tri_rem(T_mid),
+                   .circ_rem(C_mid));
 
     ChangeBox box2(.change_in(change_mid),
                    .Pentagons(P_mid),
                    .Triangles(T_mid),
                    .Circles(C_mid),
                    .coin_out(SecondCoin),
-                   .change_out(change_after);
-                   .Pentagons_rem();
-                   .Triangles_rem();
-                   .Circles_rem());
+                   .change_out(change_after),
+                   .pent_rem(),
+                   .tri_rem(),
+                   .circ_rem());
 
-    assign Remaining = PaidGeCost ? change_after_two : 4'd0;
+    assign Remaining = PaidGeCost ? change_after : 4'd0;
 
     logic PaidGtCost;
-    assign PaidGtCost = PaidGeCost & ~ExactAmount & ~CoughupMore;
+    assign PaidGtCost = PaidGeCost & ~ExactAmount & ~CoughUpMore;
 
     assign NotEnoughChange = PaidGtCost & (Remaining != 4'd0);
 
